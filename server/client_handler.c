@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
 
 #include "client_handler.h"
 
-#include <string.h>
-#include <sys/socket.h>
 
 void *handle_client(void *socket)
 {
@@ -13,38 +14,92 @@ void *handle_client(void *socket)
 
     free(socket);
 
-    char buffer[1024] = {0};
+
+    char buffer[1024];
 
 
-    recv(
-        client_socket,
-        buffer,
-        sizeof(buffer),
-        0
-    );
-
-
-    if(strcmp(buffer,"monitor\n")==0)
+    while(1)
     {
-        printf("Monitor command received\n");
-    }
-    char response[] = "Monitor feature coming soon\n";
+        memset(buffer, 0, sizeof(buffer));
 
-    send(
-        client_socket,
-        response,
-        strlen(response),
-        0
-    );
 
-    else if(strcmp(buffer,"exit\n")==0)
-    {
-        printf("Client requested exit\n");
+        int bytes_received = recv(
+            client_socket,
+            buffer,
+            sizeof(buffer),
+            0
+        );
+
+
+        if(bytes_received <= 0)
+        {
+            printf("Client disconnected\n");
+            break;
+        }
+
+
+
+        printf(
+            "Command: %s",
+            buffer
+        );
+
+
+
+        if(strcmp(buffer, "monitor\n") == 0)
+        {
+            printf("Monitor command received\n");
+
+
+            char response[] =
+                "Monitor feature coming soon\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+        }
+
+
+        else if(strcmp(buffer, "exit\n") == 0)
+        {
+            printf("Client requested exit\n");
+
+
+            char response[] =
+                "Goodbye\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+
+            break;
+        }
+
+
+        else
+        {
+            char response[] =
+                "Unknown command\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+        }
     }
-    else
-    {
-        printf("Unknown command: %s", buffer);
-    }
+
 
     close(client_socket);
 
