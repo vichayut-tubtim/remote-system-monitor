@@ -2,25 +2,105 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 
 
 #define PORT 8080
 
 
-void remove_newline(char *str)
+
+int upload_file(
+    int socket_fd,
+    char *filename
+)
 {
-    str[strcspn(str, "\n")] = 0;
+
+    FILE *file = fopen(
+        filename,
+        "rb"
+    );
+
+
+    if(file == NULL)
+    {
+        return 0;
+    }
+
+
+
+    fseek(
+        file,
+        0,
+        SEEK_END
+    );
+
+
+    long filesize = ftell(file);
+
+
+    rewind(file);
+
+
+
+    send(
+        socket_fd,
+        &filesize,
+        sizeof(filesize),
+        0
+    );
+
+
+
+    char buffer[4096];
+
+
+    int bytes;
+
+
+
+    while(
+        (bytes=fread(
+            buffer,
+            1,
+            sizeof(buffer),
+            file
+        )) > 0
+    )
+    {
+
+        send(
+            socket_fd,
+            buffer,
+            bytes,
+            0
+        );
+
+    }
+
+
+
+    fclose(file);
+
+
+    return 1;
+
 }
+
+
 
 
 int main()
 {
+
     int socket_fd;
+
 
     struct sockaddr_in server;
 
 
-    char buffer[1024];
+    char buffer[4096];
+
     char input[1024];
 
 
@@ -32,8 +112,11 @@ int main()
     );
 
 
+
     server.sin_family = AF_INET;
+
     server.sin_port = htons(PORT);
+
 
 
     inet_pton(
@@ -41,6 +124,7 @@ int main()
         "127.0.0.1",
         &server.sin_addr
     );
+
 
 
     connect(
@@ -51,9 +135,11 @@ int main()
 
 
 
+
     // =====================
-    // USERNAME
+    // LOGIN
     // =====================
+
 
     memset(buffer,0,sizeof(buffer));
 
@@ -66,11 +152,10 @@ int main()
     );
 
 
-    printf("%s: ", buffer);
-
-
-
-    memset(input,0,sizeof(input));
+    printf(
+        "%s: ",
+        buffer
+    );
 
 
     fgets(
@@ -89,10 +174,6 @@ int main()
 
 
 
-    // =====================
-    // PASSWORD
-    // =====================
-
     memset(buffer,0,sizeof(buffer));
 
 
@@ -104,11 +185,11 @@ int main()
     );
 
 
-    printf("%s: ", buffer);
+    printf(
+        "%s: ",
+        buffer
+    );
 
-
-
-    memset(input,0,sizeof(input));
 
 
     fgets(
@@ -116,6 +197,7 @@ int main()
         sizeof(input),
         stdin
     );
+
 
 
     send(
@@ -126,10 +208,6 @@ int main()
     );
 
 
-
-    // =====================
-    // LOGIN RESULT
-    // =====================
 
     memset(buffer,0,sizeof(buffer));
 
@@ -157,9 +235,11 @@ int main()
 
 
 
+
     // =====================
     // COMMAND LOOP
     // =====================
+
 
     while(1)
     {
@@ -167,7 +247,12 @@ int main()
         printf("> ");
 
 
-        memset(input,0,sizeof(input));
+
+        memset(
+            input,
+            0,
+            sizeof(input)
+        );
 
 
         fgets(
@@ -175,6 +260,124 @@ int main()
             sizeof(input),
             stdin
         );
+
+
+
+        // =====================
+        // UPLOAD
+        // =====================
+
+
+        if(strncmp(input,"upload ",7)==0)
+        {
+
+            char filename[256];
+
+
+            strcpy(
+                filename,
+                input+7
+            );
+
+
+            filename[strcspn(filename,"\n")]=0;
+
+
+
+            FILE *check=fopen(
+                filename,
+                "rb"
+            );
+
+
+            if(check==NULL)
+            {
+
+                printf(
+                    "File not found\n"
+                );
+
+                continue;
+
+            }
+
+
+            fclose(check);
+
+
+
+            // ส่ง command
+
+            send(
+                socket_fd,
+                input,
+                strlen(input),
+                0
+            );
+
+
+
+            memset(
+                buffer,
+                0,
+                sizeof(buffer)
+            );
+
+
+
+            recv(
+                socket_fd,
+                buffer,
+                sizeof(buffer)-1,
+                0
+            );
+
+
+
+            if(strcmp(buffer,"READY_UPLOAD")==0)
+            {
+
+                upload_file(
+                    socket_fd,
+                    filename
+                );
+
+
+
+                memset(
+                    buffer,
+                    0,
+                    sizeof(buffer)
+                );
+
+
+
+                recv(
+                    socket_fd,
+                    buffer,
+                    sizeof(buffer)-1,
+                    0
+                );
+
+
+                printf(
+                    "%s",
+                    buffer
+                );
+
+            }
+
+
+            continue;
+
+        }
+
+
+
+
+        // =====================
+        // NORMAL COMMAND
+        // =====================
 
 
         send(
@@ -185,10 +388,16 @@ int main()
         );
 
 
-        memset(buffer,0,sizeof(buffer));
+
+        memset(
+            buffer,
+            0,
+            sizeof(buffer)
+        );
 
 
-        recv(
+
+        int bytes = recv(
             socket_fd,
             buffer,
             sizeof(buffer)-1,
@@ -196,10 +405,19 @@ int main()
         );
 
 
+
+        if(bytes <= 0)
+        {
+            break;
+        }
+
+
+
         printf(
             "%s",
             buffer
         );
+
 
 
         if(strcmp(input,"exit\n")==0)
@@ -215,4 +433,5 @@ int main()
 
 
     return 0;
+
 }
