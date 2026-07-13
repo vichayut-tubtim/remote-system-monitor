@@ -8,7 +8,104 @@
 
 #define PORT 8080
 
+int download_file(
+    int socket_fd,
+    char *filename
+)
+{
 
+    long filesize;
+
+
+    recv(
+        socket_fd,
+        &filesize,
+        sizeof(filesize),
+        0
+    );
+
+
+
+    char path[512];
+
+
+    snprintf(
+        path,
+        sizeof(path),
+        "client_downloads/%s",
+        filename
+    );
+
+
+
+    FILE *file = fopen(
+        path,
+        "wb"
+    );
+
+
+    if(file == NULL)
+    {
+        printf("Cannot create file\n");
+        return 0;
+    }
+
+
+
+    char buffer[4096];
+
+
+    long received = 0;
+
+
+
+    while(received < filesize)
+    {
+
+        int bytes = recv(
+            socket_fd,
+            buffer,
+            sizeof(buffer),
+            0
+        );
+
+
+        if(bytes <= 0)
+        {
+            break;
+        }
+
+
+
+        fwrite(
+            buffer,
+            1,
+            bytes,
+            file
+        );
+
+
+
+        received += bytes;
+
+    }
+
+
+
+    fclose(file);
+
+
+
+    printf(
+        "Downloaded: %s (%ld bytes)\n",
+        filename,
+        filesize
+    );
+
+
+    return 1;
+
+}
 
 int upload_file(
     int socket_fd,
@@ -260,6 +357,80 @@ int main()
             sizeof(input),
             stdin
         );
+
+
+        // =====================
+        // DOWNLOAD
+        // =====================
+
+
+        if(strncmp(input,"download ",9)==0)
+        {
+
+            char filename[256];
+
+
+            strcpy(
+                filename,
+                input + 9
+            );
+
+
+            filename[strcspn(filename,"\n")] = 0;
+
+
+
+            send(
+                socket_fd,
+                input,
+                strlen(input),
+                0
+            );
+
+
+
+            memset(
+                buffer,
+                0,
+                sizeof(buffer)
+            );
+
+
+
+            recv(
+                socket_fd,
+                buffer,
+                sizeof(buffer)-1,
+                0
+            );
+
+            buffer[strcspn(buffer,"\0")] = 0;
+
+
+
+            if(strcmp(buffer,"DOWNLOAD_READY")==0)
+            {
+
+                download_file(
+                    socket_fd,
+                    filename
+                );
+
+            }
+            else
+            {
+
+                printf(
+                    "%s\n",
+                    buffer
+                );
+
+            }
+
+
+            continue;
+
+        }
 
 
 
