@@ -7,11 +7,17 @@
 
 #include "client_handler.h"
 #include "auth.h"
+#include "permission.h"
+#include "system_monitor.h"
+#include "process_monitor.h"
+
 
 void remove_newline(char *str)
 {
     str[strcspn(str, "\n")] = 0;
 }
+
+
 
 void *handle_client(void *data)
 {
@@ -77,12 +83,16 @@ void *handle_client(void *data)
     buffer[bytes] = '\0';
 
 
+
     strcpy(
         username,
         buffer
     );
 
+
     remove_newline(username);
+
+
 
 
     // =====================
@@ -117,6 +127,7 @@ void *handle_client(void *data)
     }
 
 
+
     buffer[bytes] = '\0';
 
 
@@ -126,12 +137,14 @@ void *handle_client(void *data)
         buffer
     );
 
+
     remove_newline(password);
 
 
 
+
     // =====================
-    // AUTH CHECK
+    // AUTHENTICATION
     // =====================
 
 
@@ -153,12 +166,14 @@ void *handle_client(void *data)
         );
 
 
+
         send(
             client_socket,
             response,
             strlen(response),
             0
         );
+
 
 
         printf(
@@ -169,6 +184,7 @@ void *handle_client(void *data)
         );
 
     }
+
     else
     {
 
@@ -192,6 +208,7 @@ void *handle_client(void *data)
 
 
 
+
     // =====================
     // COMMAND LOOP
     // =====================
@@ -207,6 +224,7 @@ void *handle_client(void *data)
         );
 
 
+
         bytes = recv(
             client_socket,
             buffer,
@@ -215,19 +233,22 @@ void *handle_client(void *data)
         );
 
 
+
         if(bytes <= 0)
         {
+
             printf(
                 "[Client #%d] Disconnected\n",
                 client_id
             );
 
             break;
+
         }
 
 
 
-        buffer[bytes]='\0';
+        buffer[bytes] = '\0';
 
 
 
@@ -239,11 +260,73 @@ void *handle_client(void *data)
 
 
 
-        if(strcmp(buffer,"monitor\n")==0)
+        // copy command สำหรับ check permission
+
+        char command[100];
+
+
+        strcpy(
+            command,
+            buffer
+        );
+
+
+        remove_newline(command);
+
+
+
+        // =====================
+        // PERMISSION CHECK
+        // =====================
+
+
+        if(!check_permission(
+            role,
+            command
+        ))
         {
 
             char response[] =
-                "Monitor feature coming soon\n";
+                "Permission denied\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+
+            continue;
+
+        }
+
+
+
+
+        // =====================
+        // COMMAND EXECUTION
+        // =====================
+
+
+        if(strcmp(command,"monitor")==0)
+        {
+
+            char response[1024];
+
+
+            memset(
+                response,
+                0,
+                sizeof(response)
+            );
+
+
+            get_system_status(
+                response,
+                sizeof(response)
+            );
 
 
             send(
@@ -256,7 +339,8 @@ void *handle_client(void *data)
         }
 
 
-        else if(strcmp(buffer,"exit\n")==0)
+
+        else if(strcmp(command,"exit")==0)
         {
 
             char response[] =
@@ -274,6 +358,88 @@ void *handle_client(void *data)
             break;
 
         }
+
+        else if(strcmp(command,"processes")==0)
+        {
+
+            char response[4096];
+
+
+            memset(
+                response,
+                0,
+                sizeof(response)
+            );
+
+
+            get_process_list(
+                response,
+                sizeof(response)
+            );
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+        }
+
+        else if(strcmp(command,"download")==0)
+        {
+
+            char response[] =
+                "Download feature coming soon\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+        }
+
+
+
+        else if(strcmp(command,"upload")==0)
+        {
+
+            char response[] =
+                "Upload feature coming soon\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+        }
+
+
+
+        else if(strcmp(command,"delete")==0)
+        {
+
+            char response[] =
+                "Delete feature coming soon\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+        }
+
+
 
         else
         {
@@ -296,6 +462,7 @@ void *handle_client(void *data)
 
 
     close(client_socket);
+
 
     return NULL;
 
