@@ -11,7 +11,7 @@
 
 
 #include "client_handler.h"
-
+#include "logger.h"
 
 #define PORT 8080
 
@@ -97,6 +97,15 @@ int main()
             client_id
         );
 
+        char log[100];
+
+        sprintf(
+            log,
+            "Client #%d connected",
+            client_id
+        );
+
+        write_log(log);
 
 
         ClientInfo *client =
