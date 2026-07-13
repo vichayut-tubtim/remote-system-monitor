@@ -2,11 +2,11 @@ CC = gcc
 
 TARGET = server
 
-SRC = server.c
+SRC = server.c client_handler.c
 
 
 all:
-	$(CC) $(SRC) -o $(TARGET)
+	gcc $(SRC) -pthread -I../common -o $(TARGET)
 
 
 clean:

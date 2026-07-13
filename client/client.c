@@ -15,7 +15,16 @@ int main()
     struct sockaddr_in server_address;
 
 
-    char message[] = "Hello Server";
+    char message[1024];
+
+
+    printf("> ");
+
+    fgets(
+        message,
+        sizeof(message),
+        stdin
+    );
 
 
 
@@ -61,6 +70,22 @@ int main()
         message,
         strlen(message),
         0
+    );
+
+    char buffer[1024] = {0};
+
+
+    recv(
+        socket_fd,
+        buffer,
+        sizeof(buffer),
+        0
+    );
+
+
+    printf(
+        "Server: %s\n",
+        buffer
     );
 
 
