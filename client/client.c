@@ -16,19 +16,9 @@ int main()
 
 
     char message[1024];
+    char buffer[1024];
 
 
-    printf("> ");
-
-    fgets(
-        message,
-        sizeof(message),
-        stdin
-    );
-
-
-
-    // 1. Create socket
 
     socket_fd = socket(
         AF_INET,
@@ -37,12 +27,8 @@ int main()
     );
 
 
-
-    // 2. Server address
-
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(PORT);
-
 
 
     inet_pton(
@@ -53,8 +39,6 @@ int main()
 
 
 
-    // 3. Connect
-
     connect(
         socket_fd,
         (struct sockaddr *)&server_address,
@@ -62,34 +46,53 @@ int main()
     );
 
 
-
-    // 4. Send message
-
-    send(
-        socket_fd,
-        message,
-        strlen(message),
-        0
-    );
-
-    char buffer[1024] = {0};
+    while(1)
+    {
+        memset(message,0,sizeof(message));
 
 
-    recv(
-        socket_fd,
-        buffer,
-        sizeof(buffer),
-        0
-    );
+        printf("> ");
 
 
-    printf(
-        "Server: %s\n",
-        buffer
-    );
+        fgets(
+            message,
+            sizeof(message),
+            stdin
+        );
 
 
-    printf("Message sent\n");
+        send(
+            socket_fd,
+            message,
+            strlen(message),
+            0
+        );
+
+
+
+        memset(buffer,0,sizeof(buffer));
+
+
+        recv(
+            socket_fd,
+            buffer,
+            sizeof(buffer),
+            0
+        );
+
+
+        printf(
+            "Server: %s",
+            buffer
+        );
+
+
+
+        if(strcmp(message,"exit\n")==0)
+        {
+            break;
+        }
+    }
 
 
     close(socket_fd);
