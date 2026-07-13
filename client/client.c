@@ -1,22 +1,27 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
 #include <arpa/inet.h>
 
 
 #define PORT 8080
 
 
+void remove_newline(char *str)
+{
+    str[strcspn(str, "\n")] = 0;
+}
+
+
 int main()
 {
     int socket_fd;
 
-    struct sockaddr_in server_address;
+    struct sockaddr_in server;
 
 
-    char message[1024];
     char buffer[1024];
+    char input[1024];
 
 
 
@@ -27,47 +32,157 @@ int main()
     );
 
 
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(PORT);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
 
 
     inet_pton(
         AF_INET,
         "127.0.0.1",
-        &server_address.sin_addr
+        &server.sin_addr
     );
-
 
 
     connect(
         socket_fd,
-        (struct sockaddr *)&server_address,
-        sizeof(server_address)
+        (struct sockaddr *)&server,
+        sizeof(server)
     );
 
 
+
+    // =====================
+    // USERNAME
+    // =====================
+
+    memset(buffer,0,sizeof(buffer));
+
+
+    recv(
+        socket_fd,
+        buffer,
+        sizeof(buffer)-1,
+        0
+    );
+
+
+    printf("%s: ", buffer);
+
+
+
+    memset(input,0,sizeof(input));
+
+
+    fgets(
+        input,
+        sizeof(input),
+        stdin
+    );
+
+
+    send(
+        socket_fd,
+        input,
+        strlen(input),
+        0
+    );
+
+
+
+    // =====================
+    // PASSWORD
+    // =====================
+
+    memset(buffer,0,sizeof(buffer));
+
+
+    recv(
+        socket_fd,
+        buffer,
+        sizeof(buffer)-1,
+        0
+    );
+
+
+    printf("%s: ", buffer);
+
+
+
+    memset(input,0,sizeof(input));
+
+
+    fgets(
+        input,
+        sizeof(input),
+        stdin
+    );
+
+
+    send(
+        socket_fd,
+        input,
+        strlen(input),
+        0
+    );
+
+
+
+    // =====================
+    // LOGIN RESULT
+    // =====================
+
+    memset(buffer,0,sizeof(buffer));
+
+
+    recv(
+        socket_fd,
+        buffer,
+        sizeof(buffer)-1,
+        0
+    );
+
+
+    printf(
+        "%s\n",
+        buffer
+    );
+
+
+
+    if(strncmp(buffer,"LOGIN_SUCCESS",13)!=0)
+    {
+        close(socket_fd);
+        return 0;
+    }
+
+
+
+    // =====================
+    // COMMAND LOOP
+    // =====================
+
     while(1)
     {
-        memset(message,0,sizeof(message));
-
 
         printf("> ");
 
 
+        memset(input,0,sizeof(input));
+
+
         fgets(
-            message,
-            sizeof(message),
+            input,
+            sizeof(input),
             stdin
         );
 
 
         send(
             socket_fd,
-            message,
-            strlen(message),
+            input,
+            strlen(input),
             0
         );
-
 
 
         memset(buffer,0,sizeof(buffer));
@@ -76,23 +191,24 @@ int main()
         recv(
             socket_fd,
             buffer,
-            sizeof(buffer),
+            sizeof(buffer)-1,
             0
         );
 
 
         printf(
-            "Server: %s",
+            "%s",
             buffer
         );
 
 
-
-        if(strcmp(message,"exit\n")==0)
+        if(strcmp(input,"exit\n")==0)
         {
             break;
         }
+
     }
+
 
 
     close(socket_fd);

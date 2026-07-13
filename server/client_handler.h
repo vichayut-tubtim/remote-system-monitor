@@ -10,7 +10,7 @@ typedef struct
 } ClientInfo;
 
 
-void *handle_client(void *client);
+void *handle_client(void *data);
 
 
 #endif
