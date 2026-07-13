@@ -2,11 +2,11 @@ CC = gcc
 
 TARGET = server
 
-SRC = server.c client_handler.c
+SRC = server.c client_handler.c auth.c
 
 
 all:
-	gcc $(SRC) -pthread -I../common -o $(TARGET)
+	gcc $(SRC) -pthread -o $(TARGET)
 
 
 clean:
