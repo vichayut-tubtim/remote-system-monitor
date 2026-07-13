@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <pthread.h>
+#include "client_handler.h"
 
 #define PORT 8080
 
@@ -68,25 +70,35 @@ int main()
 
     // 5. Accept client
 
-    client_socket = accept(
-        server_socket,
-        NULL,
-        NULL
-    );
+    while(1)
+    {
+        client_socket = accept(
+            server_socket,
+            NULL,
+            NULL
+        );
 
 
-    printf("Client connected!\n");
+        printf("New client connected\n");
 
 
+        pthread_t thread;
 
-    // 6. Receive message
 
-    recv(
-        client_socket,
-        buffer,
-        sizeof(buffer),
-        0
-    );
+        int *client_socket_ptr = malloc(sizeof(int));
+
+        *client_socket_ptr = client_socket;
+
+
+        pthread_create(
+            &thread,
+            NULL,
+            handle_client,
+            client_socket_ptr
+        );
+
+        pthread_detach(thread);
+    }
 
 
     printf("Client says: %s\n", buffer);

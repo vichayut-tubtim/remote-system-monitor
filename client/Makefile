@@ -6,7 +6,7 @@ SRC = client.c
 
 
 all:
-	$(CC) $(SRC) -o $(TARGET)
+	gcc $(SRC) -I../common -o $(TARGET)
 
 
 clean:
