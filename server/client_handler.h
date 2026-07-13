@@ -2,7 +2,15 @@
 #define CLIENT_HANDLER_H
 
 
-void *handle_client(void *socket);
+typedef struct
+{
+    int socket;
+    int id;
+
+} ClientInfo;
+
+
+void *handle_client(void *client);
 
 
 #endif

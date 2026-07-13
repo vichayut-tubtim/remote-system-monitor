@@ -8,19 +8,39 @@
 #include "client_handler.h"
 
 
-void *handle_client(void *socket)
-{
-    int client_socket = *(int *)socket;
 
-    free(socket);
+void *handle_client(void *data)
+{
+    ClientInfo *client = (ClientInfo *)data;
+
+
+    int client_socket = client->socket;
+    int client_id = client->id;
+
+
+    free(client);
+
 
 
     char buffer[1024];
 
 
+
+    printf(
+        "[Client #%d] Session started\n",
+        client_id
+    );
+
+
+
     while(1)
     {
-        memset(buffer, 0, sizeof(buffer));
+
+        memset(
+            buffer,
+            0,
+            sizeof(buffer)
+        );
 
 
         int bytes_received = recv(
@@ -31,25 +51,29 @@ void *handle_client(void *socket)
         );
 
 
+
         if(bytes_received <= 0)
         {
-            printf("Client disconnected\n");
+            printf(
+                "[Client #%d] Disconnected\n",
+                client_id
+            );
+
             break;
         }
 
 
 
         printf(
-            "Command: %s",
+            "[Client #%d] Command: %s",
+            client_id,
             buffer
         );
 
 
 
-        if(strcmp(buffer, "monitor\n") == 0)
+        if(strcmp(buffer,"monitor\n")==0)
         {
-            printf("Monitor command received\n");
-
 
             char response[] =
                 "Monitor feature coming soon\n";
@@ -61,13 +85,12 @@ void *handle_client(void *socket)
                 strlen(response),
                 0
             );
+
         }
 
 
-        else if(strcmp(buffer, "exit\n") == 0)
+        else if(strcmp(buffer,"exit\n")==0)
         {
-            printf("Client requested exit\n");
-
 
             char response[] =
                 "Goodbye\n";
@@ -82,11 +105,13 @@ void *handle_client(void *socket)
 
 
             break;
+
         }
 
 
         else
         {
+
             char response[] =
                 "Unknown command\n";
 
@@ -97,8 +122,11 @@ void *handle_client(void *socket)
                 strlen(response),
                 0
             );
+
         }
+
     }
+
 
 
     close(client_socket);

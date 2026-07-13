@@ -1,28 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <pthread.h>
+
+#include <string.h>
+#include <arpa/inet.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <pthread.h>
+
 #include "client_handler.h"
+
 
 #define PORT 8080
 
 
+
 int main()
 {
+
     int server_socket;
     int client_socket;
 
+
     struct sockaddr_in server_address;
+    struct sockaddr_in client_address;
 
-    char buffer[1024] = {0};
+
+    socklen_t client_size;
 
 
-    // 1. Create socket
+
+    int client_id = 1;
+
+
+
     server_socket = socket(
         AF_INET,
         SOCK_STREAM,
@@ -30,14 +43,14 @@ int main()
     );
 
 
+
     if(server_socket < 0)
     {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
+        perror("Socket failed");
+        exit(1);
     }
 
 
-    // 2. Configure server address
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
@@ -45,67 +58,80 @@ int main()
 
 
 
-    // 3. Bind socket
-
-    if(bind(
+    bind(
         server_socket,
         (struct sockaddr *)&server_address,
         sizeof(server_address)
-    ) < 0)
-    {
-        perror("Bind failed");
-        exit(EXIT_FAILURE);
-    }
+    );
 
 
 
-    // 4. Listen
-
-    listen(server_socket, 5);
-
-
-    printf("Server listening on port %d...\n", PORT);
+    listen(server_socket,5);
 
 
 
-    // 5. Accept client
+    printf(
+        "Server listening on port %d...\n",
+        PORT
+    );
+
+
 
     while(1)
     {
+
+        client_size = sizeof(client_address);
+
+
+
         client_socket = accept(
             server_socket,
-            NULL,
-            NULL
+            (struct sockaddr *)&client_address,
+            &client_size
         );
 
 
-        printf("New client connected\n");
+
+        printf(
+            "New client connected: #%d\n",
+            client_id
+        );
+
+
+
+        ClientInfo *client =
+            malloc(sizeof(ClientInfo));
+
+
+
+        client->socket = client_socket;
+        client->id = client_id;
+
 
 
         pthread_t thread;
 
-
-        int *client_socket_ptr = malloc(sizeof(int));
-
-        *client_socket_ptr = client_socket;
 
 
         pthread_create(
             &thread,
             NULL,
             handle_client,
-            client_socket_ptr
+            client
         );
 
+
+
         pthread_detach(thread);
+
+
+
+        client_id++;
+
     }
 
 
-    printf("Client says: %s\n", buffer);
 
-
-
-    close(client_socket);
     close(server_socket);
 
 
