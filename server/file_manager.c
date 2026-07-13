@@ -167,3 +167,93 @@ int receive_file(
     return 1;
 
 }
+
+int send_file(
+    int client_socket,
+    char *filename
+)
+{
+
+    char path[512];
+
+
+    snprintf(
+        path,
+        sizeof(path),
+        "server_files/%s",
+        filename
+    );
+
+
+
+    FILE *file = fopen(
+        path,
+        "rb"
+    );
+
+
+    if(file == NULL)
+    {
+        return 0;
+    }
+
+
+
+    fseek(
+        file,
+        0,
+        SEEK_END
+    );
+
+
+    long filesize = ftell(file);
+
+
+    rewind(file);
+
+
+
+    // ส่งขนาดไฟล์
+
+    send(
+        client_socket,
+        &filesize,
+        sizeof(filesize),
+        0
+    );
+
+
+
+    char buffer[4096];
+
+    int bytes;
+
+
+
+    while(
+        (bytes=fread(
+            buffer,
+            1,
+            sizeof(buffer),
+            file
+        )) > 0
+    )
+    {
+
+        send(
+            client_socket,
+            buffer,
+            bytes,
+            0
+        );
+
+    }
+
+
+
+    fclose(file);
+
+
+    return 1;
+
+}

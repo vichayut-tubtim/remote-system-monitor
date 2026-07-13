@@ -479,15 +479,85 @@ void *handle_client(void *data)
         else if(strcmp(command,"download")==0)
         {
 
-            char response[] =
-                "Download feature coming soon\n";
+            if(strlen(argument)==0)
+            {
 
+                char response[] =
+                    "Usage: download filename\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+
+                continue;
+
+            }
+
+
+
+            char path[512];
+
+
+            snprintf(
+                path,
+                sizeof(path),
+                "server_files/%s",
+                argument
+            );
+
+
+
+            FILE *check = fopen(
+                path,
+                "rb"
+            );
+
+
+            if(check == NULL)
+            {
+
+                char response[] =
+                    "FILE_NOT_FOUND";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+
+                continue;
+
+            }
+
+
+            fclose(check);
+
+
+
+            // บอก client ว่าพร้อม
 
             send(
                 client_socket,
-                response,
-                strlen(response),
+                "DOWNLOAD_READY",
+                strlen("DOWNLOAD_READY"),
                 0
+            );
+
+
+
+            // ส่งไฟล์
+
+            send_file(
+                client_socket,
+                argument
             );
 
         }

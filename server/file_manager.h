@@ -14,4 +14,10 @@ int receive_file(
 );
 
 
+int send_file(
+    int client_socket,
+    char *filename
+);
+
+
 #endif
