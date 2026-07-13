@@ -6,7 +6,7 @@ This project provides remote system monitoring, process management, authenticati
 
 ---
 
-## ✨ Features
+# ✨ Features
 
 ### 🔐 Authentication & Authorization
 
