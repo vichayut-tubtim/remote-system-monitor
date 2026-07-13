@@ -37,6 +37,7 @@ int check_permission(
             strcmp(command,"download")==0 ||
             strcmp(command,"processes")==0 ||
             strcmp(command,"upload")==0 ||
+            strcmp(command,"delete")==0 ||
             strcmp(command,"list")==0
         )
         {

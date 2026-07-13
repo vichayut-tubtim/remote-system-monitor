@@ -257,3 +257,29 @@ int send_file(
     return 1;
 
 }
+
+int delete_file(
+    char *filename
+)
+{
+
+    char path[512];
+
+
+    snprintf(
+        path,
+        sizeof(path),
+        "server_files/%s",
+        filename
+    );
+
+
+    if(remove(path)==0)
+    {
+        return 1;
+    }
+
+
+    return 0;
+
+}

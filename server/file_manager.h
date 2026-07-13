@@ -20,4 +20,9 @@ int send_file(
 );
 
 
+int delete_file(
+    char *filename
+);
+
+
 #endif

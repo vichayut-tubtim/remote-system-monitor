@@ -11,7 +11,7 @@
 #include "system_monitor.h"
 #include "process_monitor.h"
 #include "file_manager.h"
-
+#include "logger.h"
 
 void remove_newline(char *str)
 {
@@ -176,6 +176,18 @@ void *handle_client(void *data)
             username,
             role
         );
+
+        char log[200];
+
+        sprintf(
+            log,
+            "Client #%d user %s login success (%s)",
+            client_id,
+            username,
+            role
+        );
+
+        write_log(log);
 
     }
 
@@ -567,16 +579,57 @@ void *handle_client(void *data)
         else if(strcmp(command,"delete")==0)
         {
 
-            char response[] =
-                "Delete feature coming soon\n";
+            if(strlen(argument)==0)
+            {
+
+                char response[] =
+                    "Usage: delete filename\n";
 
 
-            send(
-                client_socket,
-                response,
-                strlen(response),
-                0
-            );
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+
+                continue;
+
+            }
+
+
+
+            if(delete_file(argument))
+            {
+
+                char response[] =
+                    "Delete success\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+            }
+            else
+            {
+
+                char response[] =
+                    "Delete failed\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+            }
 
         }
 
