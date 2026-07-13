@@ -10,6 +10,7 @@
 #include "permission.h"
 #include "system_monitor.h"
 #include "process_monitor.h"
+#include "file_manager.h"
 
 
 void remove_newline(char *str)
@@ -33,7 +34,7 @@ void *handle_client(void *data)
 
 
 
-    char buffer[1024];
+    char buffer[4096];
 
     char username[50];
     char password[50];
@@ -56,10 +57,9 @@ void *handle_client(void *data)
     send(
         client_socket,
         "USERNAME",
-        8,
+        strlen("USERNAME"),
         0
     );
-
 
 
     memset(buffer,0,sizeof(buffer));
@@ -80,8 +80,7 @@ void *handle_client(void *data)
     }
 
 
-    buffer[bytes] = '\0';
-
+    buffer[bytes]='\0';
 
 
     strcpy(
@@ -94,7 +93,6 @@ void *handle_client(void *data)
 
 
 
-
     // =====================
     // LOGIN PASSWORD
     // =====================
@@ -103,7 +101,7 @@ void *handle_client(void *data)
     send(
         client_socket,
         "PASSWORD",
-        8,
+        strlen("PASSWORD"),
         0
     );
 
@@ -127,8 +125,7 @@ void *handle_client(void *data)
     }
 
 
-
-    buffer[bytes] = '\0';
+    buffer[bytes]='\0';
 
 
 
@@ -142,9 +139,8 @@ void *handle_client(void *data)
 
 
 
-
     // =====================
-    // AUTHENTICATION
+    // AUTH
     // =====================
 
 
@@ -166,14 +162,12 @@ void *handle_client(void *data)
         );
 
 
-
         send(
             client_socket,
             response,
             strlen(response),
             0
         );
-
 
 
         printf(
@@ -208,7 +202,6 @@ void *handle_client(void *data)
 
 
 
-
     // =====================
     // COMMAND LOOP
     // =====================
@@ -224,7 +217,6 @@ void *handle_client(void *data)
         );
 
 
-
         bytes = recv(
             client_socket,
             buffer,
@@ -233,50 +225,55 @@ void *handle_client(void *data)
         );
 
 
-
         if(bytes <= 0)
         {
-
             printf(
                 "[Client #%d] Disconnected\n",
                 client_id
             );
 
             break;
-
         }
 
 
 
-        buffer[bytes] = '\0';
+        buffer[bytes]='\0';
+
+
+
+        remove_newline(buffer);
 
 
 
         printf(
-            "[Client #%d] %s",
+            "[Client #%d] Command: %s\n",
             client_id,
             buffer
         );
 
 
 
-        // copy command สำหรับ check permission
+        // แยก command กับ argument
 
         char command[100];
+        char argument[256];
 
 
-        strcpy(
+        memset(command,0,sizeof(command));
+        memset(argument,0,sizeof(argument));
+
+
+        sscanf(
+            buffer,
+            "%s %s",
             command,
-            buffer
+            argument
         );
-
-
-        remove_newline(command);
 
 
 
         // =====================
-        // PERMISSION CHECK
+        // PERMISSION
         // =====================
 
 
@@ -304,10 +301,10 @@ void *handle_client(void *data)
 
 
 
-
         // =====================
         // COMMAND EXECUTION
         // =====================
+
 
 
         if(strcmp(command,"monitor")==0)
@@ -340,25 +337,6 @@ void *handle_client(void *data)
 
 
 
-        else if(strcmp(command,"exit")==0)
-        {
-
-            char response[] =
-                "Goodbye\n";
-
-
-            send(
-                client_socket,
-                response,
-                strlen(response),
-                0
-            );
-
-
-            break;
-
-        }
-
         else if(strcmp(command,"processes")==0)
         {
 
@@ -387,11 +365,25 @@ void *handle_client(void *data)
 
         }
 
-        else if(strcmp(command,"download")==0)
+
+
+        else if(strcmp(command,"list")==0)
         {
 
-            char response[] =
-                "Download feature coming soon\n";
+            char response[4096];
+
+
+            memset(
+                response,
+                0,
+                sizeof(response)
+            );
+
+
+            list_files(
+                response,
+                sizeof(response)
+            );
 
 
             send(
@@ -408,8 +400,87 @@ void *handle_client(void *data)
         else if(strcmp(command,"upload")==0)
         {
 
+            if(strlen(argument)==0)
+            {
+
+                char response[] =
+                    "Usage: upload filename\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+
+                continue;
+
+            }
+
+
+
+            printf(
+                "[Client #%d] Upload request: %s\n",
+                client_id,
+                argument
+            );
+
+
+
+            send(
+                client_socket,
+                "READY_UPLOAD",
+                strlen("READY_UPLOAD"),
+                0
+            );
+
+
+
+            if(receive_file(
+                client_socket,
+                argument
+            ))
+            {
+
+                char response[] =
+                    "Upload success\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+            }
+            else
+            {
+
+                char response[] =
+                    "Upload failed\n";
+
+
+                send(
+                    client_socket,
+                    response,
+                    strlen(response),
+                    0
+                );
+
+            }
+
+        }
+
+
+
+        else if(strcmp(command,"download")==0)
+        {
+
             char response[] =
-                "Upload feature coming soon\n";
+                "Download feature coming soon\n";
 
 
             send(
@@ -436,6 +507,27 @@ void *handle_client(void *data)
                 strlen(response),
                 0
             );
+
+        }
+
+
+
+        else if(strcmp(command,"exit")==0)
+        {
+
+            char response[] =
+                "Goodbye\n";
+
+
+            send(
+                client_socket,
+                response,
+                strlen(response),
+                0
+            );
+
+
+            break;
 
         }
 
