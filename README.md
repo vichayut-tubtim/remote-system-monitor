@@ -85,7 +85,8 @@ Remote-System-Monitor
      🔐 Authentication                 🖥️ Monitoring             📁 File Manager
      - Login                            - CPU Info                - Upload
      - Password                         - Memory                  - Download
-                                        - Processes               - Delete
+          │                             - Processes               - Delete
+          │                                   │                   - list
           │                                   │                        │
           └───────────────────┬───────────────┴────────────────────────┘
                               │
