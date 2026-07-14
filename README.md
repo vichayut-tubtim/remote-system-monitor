@@ -4,6 +4,33 @@ A **multi-threaded client-server system** built with **C and POSIX Socket Progra
 
 This project provides remote system monitoring, process management, authentication, role-based permission control, and file transfer capabilities through TCP communication.
 
+```text
+                 
+
+┌──────────────┐                      ┌──────────────────┐
+│              │    TCP Connection    │                  │
+│    Client    │ ───────────────────► │      Server      │
+│              │                      │                  │
+└──────────────┘                      └───────┬──────────┘
+                                              │
+          ┌───────────────────────────────────┼────────────────────────┐
+          │                                   │                        │
+          ▼                                   ▼                        ▼
+     🔐 Authentication                 🖥️ Monitoring             📁 File Manager
+     - Login                            - CPU Info                - Upload
+     - Password                         - Memory                  - Download
+          │                             - Processes               - Delete
+          │                                   │                   - list
+          │                                   │                        │
+          └───────────────────┬───────────────┴────────────────────────┘
+                              │
+                              ▼
+                         📝 Logger
+                         - Login Events
+                         - Server Activities
+```
+
+
 ---
 
 # ✨ Features
@@ -63,37 +90,6 @@ Remote-System-Monitor
 │
 └── README.md
 ```
-
----
-
-# 🏗️ System Architecture
-
-```text
-                 
-
-┌──────────────┐                      ┌──────────────────┐
-│              │    TCP Connection    │                  │
-│    Client    │ ───────────────────► │      Server      │
-│              │                      │                  │
-└──────────────┘                      └───────┬──────────┘
-                                              │
-          ┌───────────────────────────────────┼────────────────────────┐
-          │                                   │                        │
-          ▼                                   ▼                        ▼
-     🔐 Authentication                 🖥️ Monitoring             📁 File Manager
-     - Login                            - CPU Info                - Upload
-     - Password                         - Memory                  - Download
-          │                             - Processes               - Delete
-          │                                   │                   - list
-          │                                   │                        │
-          └───────────────────┬───────────────┴────────────────────────┘
-                              │
-                              ▼
-                         📝 Logger
-                         - Login Events
-                         - Server Activities
-```
-
 ---
 
 # 🛠️ System Features
