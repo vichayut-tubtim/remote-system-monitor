@@ -85,8 +85,6 @@ Remote-System-Monitor
 │   ├── client.c
 │   └── client_downloads/
 │
-├── docs/
-│   └── architecture.png
 │
 └── README.md
 ```
