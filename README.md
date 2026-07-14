@@ -318,9 +318,3 @@ Through this project, I practiced:
 * Docker deployment
 
 ---
-
-# 👨‍💻 Author
-
-**Vichayut Tubtim**
-
-Computer Engineering Student, Thammasat University
