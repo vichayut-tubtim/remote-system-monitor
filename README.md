@@ -100,7 +100,7 @@ Remote-System-Monitor
 
 # 🛠️ System Features
 
-## 🖥️ System Monitoring
+## 1. System Monitoring
 
 Monitor Linux system information:
 
@@ -123,7 +123,7 @@ Memory Usage: 43%
 
 ---
 
-## ⚙️ Process Monitoring
+## 2. Process Monitoring
 
 View running Linux processes:
 
@@ -145,7 +145,7 @@ PID     COMMAND        STATE
 
 ---
 
-## 📁 File Management
+## 3. File Management
 
 Remote file operations:
 
@@ -171,7 +171,7 @@ Downloaded successfully
 
 ---
 
-## 📝 Logging System
+## 4. Logging System
 
 Server activity logging:
 
@@ -216,7 +216,7 @@ cd Remote-System-Monitor
 
 ---
 
-# 🔨 Build Server
+## 2. Build Server
 
 ```bash
 cd server
@@ -241,7 +241,7 @@ Run:
 
 ---
 
-# 🔨 Build Client
+## 3. Build Client
 
 ```bash
 cd client
