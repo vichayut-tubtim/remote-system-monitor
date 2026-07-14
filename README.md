@@ -23,8 +23,6 @@ PASSWORD: 1234
 LOGIN_SUCCESS admin
 ```
 
----
-
 ### 🌐 Client-Server Communication
 
 * TCP Socket Programming
@@ -121,8 +119,6 @@ CPU Usage: 12%
 Memory Usage: 43%
 ```
 
----
-
 ## 2. Process Monitoring
 
 View running Linux processes:
@@ -142,8 +138,6 @@ PID     COMMAND        STATE
 647     server         S
 648     client         S
 ```
-
----
 
 ## 3. File Management
 
@@ -168,8 +162,6 @@ Upload success
 
 Downloaded successfully
 ```
-
----
 
 ## 4. Logging System
 
@@ -214,8 +206,6 @@ git clone <repository-url>
 cd Remote-System-Monitor
 ```
 
----
-
 ## 2. Build Server
 
 ```bash
@@ -238,8 +228,6 @@ Run:
 ```bash
 ./server
 ```
-
----
 
 ## 3. Build Client
 
@@ -316,5 +304,3 @@ Through this project, I practiced:
 * Web dashboard
 * Real-time monitoring
 * Docker deployment
-
----
